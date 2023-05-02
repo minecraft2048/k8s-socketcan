@@ -438,7 +438,12 @@ func (nbdp *SocketCANDevicePlugin) moveSocketcanIntoPod(ifname string, container
 	}
 
 	//set the can interface up inside the container namespace
-	ns_handle := netns.NsHandle(containerPid)
+
+	aa, err := netlink.GetNetNsIdByPid(containerPid)
+	if err != nil {
+		return err
+	}
+	ns_handle := netns.NsHandle(aa)
 	defer ns_handle.Close()
 	netlink_handle, err := netlink.NewHandleAt(ns_handle)
 	if err != nil {
