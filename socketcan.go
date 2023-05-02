@@ -18,6 +18,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/kubevirt/device-plugin-manager/pkg/dpm"
 	"github.com/vishvananda/netlink"
+	"github.com/vishvananda/netns"
 	"golang.org/x/net/context"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
@@ -435,7 +436,15 @@ func (nbdp *SocketCANDevicePlugin) moveSocketcanIntoPod(ifname string, container
 	if err != nil {
 		return err
 	}
-	return netlink.LinkSetUp(link)
+
+	//set the can interface up inside the container namespace
+	ns_handle := netns.NsHandle(containerPid)
+	defer ns_handle.Close()
+	netlink_handle, err := netlink.NewHandleAt(ns_handle)
+	if err != nil {
+		return err
+	}
+	return netlink_handle.LinkSetUp(link)
 }
 
 func main() {
