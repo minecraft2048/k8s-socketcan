@@ -431,7 +431,11 @@ func (nbdp *SocketCANDevicePlugin) moveSocketcanIntoPod(ifname string, container
 	if err != nil {
 		return err
 	}
-	return netlink.LinkSetNsPid(link, containerPid)
+	err = netlink.LinkSetNsPid(link, containerPid)
+	if err != nil {
+		return err
+	}
+	return netlink.LinkSetUp(link)
 }
 
 func main() {
